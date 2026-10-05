@@ -4,6 +4,8 @@ from app.database import get_collection, db
 from app.ocr_service import parse_and_validate_payment, parse_any_upi_screenshot
 from datetime import datetime
 from typing import Optional
+from bson import ObjectId
+from pydantic import BaseModel
 
 router = APIRouter(prefix="/api", tags=["Registrations"])
 
@@ -241,6 +243,38 @@ async def admin_update_status(payload: AdminActionSchema):
         "status": "success",
         "message": f"Status updated to {status_upper}"
     }
+
+class RecordActionSchema(BaseModel):
+    action: str # "APPROVED", "REJECTED", "DELETE"
+
+@router.post("/admin/record-action/{record_id}")
+async def admin_record_action(record_id: str, payload: RecordActionSchema):
+    if db.client is None:
+        return {"status": "success", "message": f"Demo {payload.action} action performed."}
+
+    collection = get_collection("registrations")
+    action = payload.action.upper()
+
+    try:
+        obj_id = ObjectId(record_id)
+    except Exception:
+        raise HTTPException(status_code=400, detail="Invalid record ID format.")
+
+    if action == "DELETE":
+        result = await collection.delete_one({"_id": obj_id})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=404, detail="Registration not found.")
+        return {"status": "success", "message": "Record deleted successfully."}
+    elif action in ["APPROVED", "REJECTED", "PENDING"]:
+        result = await collection.update_one(
+            {"_id": obj_id},
+            {"$set": {"registrationStatus": action, "updatedAt": datetime.utcnow()}}
+        )
+        if result.matched_count == 0:
+            raise HTTPException(status_code=404, detail="Registration not found.")
+        return {"status": "success", "message": f"Record status updated to {action}."}
+    else:
+        raise HTTPException(status_code=400, detail="Invalid action.")
 
 
 @router.get("/export-csv")

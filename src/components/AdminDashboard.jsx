@@ -1,17 +1,16 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 
 export default function AdminDashboard({
   submissions = [],
-  onUpdateStatus,
+  onRecordAction,
   onLogout,
   onBackToForm
 }) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('NEW_STUDENTS');
+  const [expandedRowId, setExpandedRowId] = useState(null);
 
   const filtered = submissions.filter((item) => {
-    // Legacy submissions usually lack ocrStatus, new ones have it. 
-    // Alternatively, you can use a date threshold. Here we use ocrStatus presence as a proxy for "automated".
     const isNew = item.ocrStatus != null;
     let matchesTab = false;
     const status = item.registrationStatus || 'PENDING';
@@ -76,6 +75,15 @@ export default function AdminDashboard({
     document.body.removeChild(link);
   };
 
+  const handleAction = (recordId, action) => {
+    if (action === 'DELETE') {
+      if (!window.confirm("Are you sure you want to permanently delete this registration record?")) {
+        return;
+      }
+    }
+    onRecordAction(recordId, action);
+  };
+
   return (
     <div className="step admin-container">
       <div className="admin-header">
@@ -95,21 +103,21 @@ export default function AdminDashboard({
         <button
           type="button"
           className={`tab-btn tab-approved ${statusFilter === 'NEW_STUDENTS' ? 'active' : ''}`}
-          onClick={() => setStatusFilter('NEW_STUDENTS')}
+          onClick={() => { setStatusFilter('NEW_STUDENTS'); setExpandedRowId(null); }}
         >
-          New Students ({countNew})
+          New ({countNew})
         </button>
         <button
           type="button"
           className={`tab-btn tab-pending ${statusFilter === 'OLD_STUDENTS' ? 'active' : ''}`}
-          onClick={() => setStatusFilter('OLD_STUDENTS')}
+          onClick={() => { setStatusFilter('OLD_STUDENTS'); setExpandedRowId(null); }}
         >
-          Old Students ({countOld})
+          Old ({countOld})
         </button>
         <button
           type="button"
           className={`tab-btn ${statusFilter === 'UNFINISHED' ? 'active' : ''}`}
-          onClick={() => setStatusFilter('UNFINISHED')}
+          onClick={() => { setStatusFilter('UNFINISHED'); setExpandedRowId(null); }}
           style={{ background: statusFilter === 'UNFINISHED' ? 'rgba(234, 179, 8, 0.1)' : '', color: statusFilter === 'UNFINISHED' ? '#a16207' : '' }}
         >
           Unfinished ({countUnfinished})
@@ -117,7 +125,7 @@ export default function AdminDashboard({
         <button
           type="button"
           className={`tab-btn ${statusFilter === 'REJECTED' ? 'active' : ''}`}
-          onClick={() => setStatusFilter('REJECTED')}
+          onClick={() => { setStatusFilter('REJECTED'); setExpandedRowId(null); }}
           style={{ background: statusFilter === 'REJECTED' ? 'rgba(239, 68, 68, 0.1)' : '', color: statusFilter === 'REJECTED' ? '#b91c1c' : '' }}
         >
           Rejected ({countRejected})
@@ -128,7 +136,7 @@ export default function AdminDashboard({
         <input
           type="text"
           className="admin-search"
-          placeholder="Search by Reg ID, name, parish, diocese, phone, registered by..."
+          placeholder="Search by Reg ID, name, phone..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -142,25 +150,20 @@ export default function AdminDashboard({
         </button>
       </div>
 
-      <div className="admin-table-wrapper">
+      <div className="admin-table-wrapper" style={{ overflowX: 'hidden' }}>
         <table className="admin-table">
           <thead>
             <tr>
-              <th>#</th>
-              {statusFilter === 'OLD_STUDENTS' && <th>Reg ID</th>}
-              <th>Name &amp; Phone</th>
-              <th>Email</th>
-              <th>Parish / Diocese</th>
-              <th>Size</th>
-              <th>Registered By</th>
-              <th>Status</th>
-              {statusFilter === 'OLD_STUDENTS' && <th>Actions</th>}
+              <th style={{ width: '10%' }}>#</th>
+              <th style={{ width: '40%' }}>Name &amp; Phone</th>
+              <th style={{ width: '25%' }}>Status</th>
+              <th style={{ width: '25%', textAlign: 'right' }}>Actions</th>
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 ? (
               <tr>
-                <td colSpan={statusFilter === 'OLD_STUDENTS' ? "9" : "7"} style={{ textAlign: 'center', color: 'var(--ink-500)', padding: 24, fontSize: 12 }}>
+                <td colSpan="4" style={{ textAlign: 'center', color: 'var(--ink-500)', padding: 24, fontSize: 12 }}>
                   No registrations found matching criteria.
                 </td>
               </tr>
@@ -170,88 +173,90 @@ export default function AdminDashboard({
                 const itemRegId = item.regId || item.registration_id || '-';
                 const registeredByText = item.registeredBy || 'Primary / Self';
                 const isGroupChild = !!item.registeredBy && item.registeredBy !== 'Primary / Self';
+                const isExpanded = expandedRowId === item.id;
+
                 return (
-                  <tr key={idx}>
-                    <td style={{ whiteSpace: 'normal', fontWeight: 800, fontSize: 11, color: 'var(--ink-500)' }}>
-                      {idx + 1}
-                    </td>
-                    {statusFilter === 'OLD_STUDENTS' && (
+                  <React.Fragment key={item.id || idx}>
+                    <tr style={{ background: isExpanded ? 'rgba(59, 130, 246, 0.05)' : 'transparent', cursor: 'pointer' }} onClick={() => setExpandedRowId(isExpanded ? null : item.id)}>
+                      <td style={{ fontWeight: 800, fontSize: 11, color: 'var(--ink-500)' }}>
+                        {idx + 1}
+                      </td>
                       <td style={{ whiteSpace: 'normal' }}>
-                        <code style={{ fontSize: 9, fontWeight: 'bold', color: 'var(--jy-crimson)', background: 'rgba(217, 4, 41, 0.06)', padding: '2px 4px', borderRadius: 4, display: 'inline-block', wordBreak: 'break-all', lineHeight: 1.3 }}>
-                          {itemRegId}
-                        </code>
+                        <strong style={{ fontSize: 12 }}>{item.name} {item.surname}</strong>
+                        <div style={{ fontSize: 10, color: 'var(--ink-500)', marginTop: 2 }}>{item.phone}</div>
                       </td>
-                    )}
-                    <td style={{ whiteSpace: 'normal' }}>
-                      <strong style={{ fontSize: 11 }}>{item.name} {item.surname}</strong>
-                      <div style={{ fontSize: 9, color: 'var(--ink-500)', marginTop: 2 }}>{item.phone}</div>
-                    </td>
-                    <td>
-                      <span style={{ fontSize: 9, color: 'var(--ink-600)' }}>{item.email || '-'}</span>
-                    </td>
-                    <td style={{ whiteSpace: 'normal' }}>
-                      <div style={{ fontWeight: 600, fontSize: 10.5 }}>{item.parish}</div>
-                      <div style={{ fontSize: 9, color: 'var(--ink-500)', marginTop: 1 }}>{item.diocese}</div>
-                    </td>
-                    <td><span className="badge-chip">{item.tShirtSize || 'M'}</span></td>
-                    <td>
-                      {isGroupChild ? (
-                        <span style={{
-                          display: 'inline-block',
-                          background: 'rgba(59, 130, 246, 0.1)',
-                          color: '#1d4ed8',
-                          border: '1px solid rgba(59, 130, 246, 0.3)',
-                          borderRadius: '6px',
-                          padding: '2px 6px',
-                          fontSize: '8.5px',
-                          fontWeight: 'bold'
-                        }}>
-                          🔗 {registeredByText}
-                        </span>
-                      ) : (
-                        <span style={{ fontSize: '8.5px', color: 'var(--ink-500)', fontStyle: 'italic' }}>
-                          👤 Primary / Self
-                        </span>
-                      )}
-                    </td>
-                    <td>
-                      <span className={`status-pill pill-${itemStatus.toLowerCase()}`}>
-                        {itemStatus}
-                      </span>
-                      {item.ocrStatus && (
-                        <div style={{
-                          fontSize: '8px',
-                          marginTop: 3,
-                          fontWeight: 'bold',
-                          color: item.ocrStatus === 'APPROVED' ? '#16a34a' : '#d97706'
-                        }}>
-                          🤖 OCR: {item.ocrStatus}
-                        </div>
-                      )}
-                    </td>
-                    {statusFilter === 'OLD_STUDENTS' && (
                       <td>
-                        <div className="action-btn-group">
-                          <button
-                            type="button"
-                            className="btn-approve"
-                            disabled={itemStatus === 'APPROVED'}
-                            onClick={() => onUpdateStatus(item.device_id || item.phone || item.regId, 'APPROVED')}
-                          >
-                            Approve ✓
-                          </button>
-                          <button
-                            type="button"
-                            className="btn-reject"
-                            disabled={itemStatus === 'REJECTED'}
-                            onClick={() => onUpdateStatus(item.device_id || item.phone || item.regId, 'REJECTED')}
-                          >
-                            Reject ✕
-                          </button>
-                        </div>
+                        <span className={`status-pill pill-${itemStatus.toLowerCase()}`}>
+                          {itemStatus}
+                        </span>
                       </td>
+                      <td style={{ textAlign: 'right' }}>
+                        <button
+                          type="button"
+                          className="btn-secondary"
+                          style={{ fontSize: 10, padding: '4px 8px', width: 'auto' }}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setExpandedRowId(isExpanded ? null : item.id);
+                          }}
+                        >
+                          {isExpanded ? 'Hide Details' : 'Details'}
+                        </button>
+                      </td>
+                    </tr>
+
+                    {isExpanded && (
+                      <tr style={{ background: 'rgba(59, 130, 246, 0.02)' }}>
+                        <td colSpan="4" style={{ padding: '12px 16px', borderBottom: '2px solid #e2e8f0' }}>
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px', fontSize: 11, marginBottom: 12 }}>
+                            <div><strong>Reg ID:</strong> <span style={{ color: 'var(--jy-crimson)' }}>{itemRegId}</span></div>
+                            <div><strong>Email:</strong> {item.email || '-'}</div>
+                            <div><strong>Parish:</strong> {item.parish}</div>
+                            <div><strong>Diocese:</strong> {item.diocese}</div>
+                            <div><strong>T-Shirt Size:</strong> {item.tShirtSize || 'M'}</div>
+                            <div><strong>Registered By:</strong> {isGroupChild ? <span style={{ color: '#1d4ed8' }}>🔗 {registeredByText}</span> : '👤 Self'}</div>
+                            {item.ocrStatus && (
+                              <div style={{ gridColumn: '1 / -1' }}>
+                                <strong>🤖 OCR Status:</strong> 
+                                <span style={{ marginLeft: 4, fontWeight: 'bold', color: item.ocrStatus === 'APPROVED' ? '#16a34a' : '#d97706' }}>
+                                  {item.ocrStatus}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+
+                          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', borderTop: '1px solid #e2e8f0', paddingTop: '12px' }}>
+                            <button
+                              type="button"
+                              className="btn-approve"
+                              style={{ flex: 1, minWidth: '100px', padding: '8px 4px', fontSize: 11, opacity: itemStatus === 'APPROVED' ? 0.5 : 1 }}
+                              disabled={itemStatus === 'APPROVED'}
+                              onClick={() => handleAction(item.id, 'APPROVED')}
+                            >
+                              ✓ Approve
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-reject"
+                              style={{ flex: 1, minWidth: '100px', padding: '8px 4px', fontSize: 11, opacity: itemStatus === 'REJECTED' ? 0.5 : 1 }}
+                              disabled={itemStatus === 'REJECTED'}
+                              onClick={() => handleAction(item.id, 'REJECTED')}
+                            >
+                              ✕ Reject
+                            </button>
+                            <button
+                              type="button"
+                              className="btn-reject"
+                              style={{ flex: 1, minWidth: '100px', padding: '8px 4px', fontSize: 11, background: '#ef4444', color: 'white' }}
+                              onClick={() => handleAction(item.id, 'DELETE')}
+                            >
+                              🗑️ Delete
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
                     )}
-                  </tr>
+                  </React.Fragment>
                 );
               })
             )}

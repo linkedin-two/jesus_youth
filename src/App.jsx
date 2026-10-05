@@ -365,31 +365,27 @@ export default function App() {
     }
   };
 
-  // Admin Actions: Approve or Reject a registration
-  const handleAdminUpdateStatus = async (targetDeviceId, newStatus) => {
+  // Admin Actions: Approve, Reject, or Delete a specific registration record
+  const handleAdminRecordAction = async (recordId, action) => {
     try {
-      // API call to FastAPI admin endpoint
-      await fetch(`${API_BASE_URL}/api/admin/action`, {
+      await fetch(`${API_BASE_URL}/api/admin/record-action/${recordId}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ device_id: targetDeviceId, status: newStatus }),
+        body: JSON.stringify({ action: action }),
       });
     } catch (e) {
       console.warn('FastAPI admin action API offline, updating local state:', e);
     }
 
     // Update local state immediately for instant UI feedback
-    setMvpSubmissions((prev) =>
-      prev.map((item) =>
-        item.device_id === targetDeviceId || item.phone === targetDeviceId || item.regId === targetDeviceId
-          ? { ...item, registrationStatus: newStatus }
-          : item
-      )
-    );
-
-    // If target device is current user, update current user view instantly
-    if (targetDeviceId === deviceId || userRegistration?.phone === targetDeviceId || userRegistration?.regId === targetDeviceId) {
-      setUserRegistration((prev) => (prev ? { ...prev, registrationStatus: newStatus } : null));
+    if (action === 'DELETE') {
+      setMvpSubmissions((prev) => prev.filter((item) => item.id !== recordId));
+    } else {
+      setMvpSubmissions((prev) =>
+        prev.map((item) =>
+          item.id === recordId ? { ...item, registrationStatus: action } : item
+        )
+      );
     }
 
     // Re-fetch from MongoDB to ensure admin dashboard reflects the real database state
@@ -493,7 +489,7 @@ export default function App() {
           {step === -2 && (
             <AdminDashboard
               submissions={mvpSubmissions}
-              onUpdateStatus={handleAdminUpdateStatus}
+              onRecordAction={handleAdminRecordAction}
               onLogout={() => {
                 setIsAdminLoggedIn(false);
                 setStep(0);
