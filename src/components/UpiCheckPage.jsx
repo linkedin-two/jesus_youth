@@ -43,16 +43,17 @@ export default function UpiCheckPage({ onBackToForm }) {
     if (fileName.includes('100')) detectedAmount = 100.0;
     else if (fileName.includes('500')) detectedAmount = 500.0;
 
+    const payeeName = (import.meta.env.VITE_UPI_ACCOUNT_NAME || 'Abraham Joseph Thadathil').toUpperCase();
     return {
       is_upi_payment: true,
       app_detected: app,
       payment_status: 'SUCCESSFUL / PAID',
-      recipient_name: 'ABRAHAM JOSEPH THADATHIL',
+      recipient_name: payeeName,
       amount: detectedAmount,
       amounts_found: [detectedAmount],
       date_time: '27 September 2026, 2:00 am',
       transaction_id: 'Extracted via UPI Inspection Engine',
-      raw_text: `[Screenshot Processed]\nFile Name: ${selectedFile?.name || 'upi.jpg'}\nFile Size: ${((selectedFile?.size || 0) / 1024).toFixed(1)} KB\nPayee: ABRAHAM JOSEPH THADATHIL\nBanking Name: ABRAHAM JOSEPH THAD...\nExtracted Amount: ₹${detectedAmount}\nDate: 27 September 2026, 2:00 am\nStatus: SUCCESSFUL / PAID`
+      raw_text: `[Screenshot Processed]\nFile Name: ${selectedFile?.name || 'upi.jpg'}\nFile Size: ${((selectedFile?.size || 0) / 1024).toFixed(1)} KB\nPayee: ${payeeName}\nBanking Name: ${payeeName}\nExtracted Amount: ₹${detectedAmount}\nDate: 27 September 2026, 2:00 am\nStatus: SUCCESSFUL / PAID`
     };
   };
 

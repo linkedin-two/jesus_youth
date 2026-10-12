@@ -11,11 +11,17 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.9
       - key: MONGODB_URL
-        value: mongodb+srv://admin:admin@cluster.rnhig2f.mongodb.net/jesus_youth
-      - key: DATABASE_NAME
+        sync: false
+      - key: DB_NAME
         value: jesus_youth
       - key: CORS_ORIGINS
         value: "*"
+      - key: ADMIN_KEY
+        sync: false
+      - key: ADMIN_USER
+        sync: false
+      - key: ADMIN_PASS
+        sync: false
 
   # ⚡ React Frontend Static Site
   - type: static
@@ -32,3 +38,23 @@ services:
           type: web
           name: jesus-youth-backend
           property: url
+      - key: VITE_ADMIN_USER
+        sync: false
+      - key: VITE_ADMIN_PASS
+        sync: false
+      - key: VITE_ADMIN_KEY
+        sync: false
+      - key: VITE_UPI_ID
+        sync: false
+      - key: VITE_UPI_ACCOUNT_NAME
+        sync: false
+      - key: VITE_UPI_QR_URL
+        sync: false
+      - key: VITE_COORDINATOR_1_NAME
+        sync: false
+      - key: VITE_COORDINATOR_1_PHONE
+        sync: false
+      - key: VITE_COORDINATOR_2_NAME
+        sync: false
+      - key: VITE_COORDINATOR_2_PHONE
+        sync: false

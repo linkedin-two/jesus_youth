@@ -1,13 +1,26 @@
-from fastapi import APIRouter, HTTPException, Query, Response, UploadFile, File, Form
+import csv
+import io
+from typing import Optional
+from fastapi import APIRouter, HTTPException, Query, Response, UploadFile, File, Form, Header, Depends
 from app.models import StudentRegistrationSchema, AdminActionSchema, APIResponseSchema
 from app.database import get_collection, db
 from app.ocr_service import parse_and_validate_payment, parse_any_upi_screenshot
+from app.config import settings
 from datetime import datetime
-from typing import Optional
 from bson import ObjectId
 from pydantic import BaseModel
 
 router = APIRouter(prefix="/api", tags=["Registrations"])
+
+def verify_admin(
+    x_admin_key: Optional[str] = Header(None, alias="x-admin-key"),
+    key: Optional[str] = Query(None)
+):
+    expected_key = (settings.ADMIN_KEY or "").strip()
+    provided_key = (x_admin_key or key or "").strip()
+    if expected_key and provided_key != expected_key:
+        raise HTTPException(status_code=401, detail="Unauthorized: Invalid Admin Key")
+    return True
 
 @router.post("/register", response_model=APIResponseSchema, status_code=201)
 async def register_student(payload: StudentRegistrationSchema):
@@ -179,7 +192,7 @@ async def get_registration_status(device_id: str):
     }
 
 
-@router.get("/admin/registrations")
+@router.get("/admin/registrations", dependencies=[Depends(verify_admin)])
 async def list_admin_registrations(q: str = Query(None), status: str = Query("ALL")):
     if db.client is None:
         return []
@@ -212,7 +225,7 @@ async def list_admin_registrations(q: str = Query(None), status: str = Query("AL
     return registrations
 
 
-@router.post("/admin/action")
+@router.post("/admin/action", dependencies=[Depends(verify_admin)])
 async def admin_update_status(payload: AdminActionSchema):
     if db.client is None:
         return {"status": "success", "message": "Demo status updated."}
@@ -247,7 +260,7 @@ async def admin_update_status(payload: AdminActionSchema):
 class RecordActionSchema(BaseModel):
     action: str # "APPROVED", "REJECTED", "DELETE"
 
-@router.post("/admin/record-action/{record_id}")
+@router.post("/admin/record-action/{record_id}", dependencies=[Depends(verify_admin)])
 async def admin_record_action(record_id: str, payload: RecordActionSchema):
     if db.client is None:
         return {"status": "success", "message": f"Demo {payload.action} action performed."}
@@ -277,7 +290,7 @@ async def admin_record_action(record_id: str, payload: RecordActionSchema):
         raise HTTPException(status_code=400, detail="Invalid action.")
 
 
-@router.get("/export-csv")
+@router.get("/export-csv", dependencies=[Depends(verify_admin)])
 async def export_registrations_csv(status: str = Query("ALL")):
     headers = [
         "Registration ID", "Name", "Surname", "Parish", "Diocese", "Phone", "Email",

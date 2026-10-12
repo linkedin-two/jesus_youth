@@ -4,6 +4,11 @@ export default function StepWelcome({ onStart, onLookupUniqueId, lookupError, se
   const [uniqueIdInput, setUniqueIdInput] = useState('');
   const [searching, setSearching] = useState(false);
 
+  const coord1Name = import.meta.env.VITE_COORDINATOR_1_NAME || 'ABRAHAM JOSEPH';
+  const coord1Phone = import.meta.env.VITE_COORDINATOR_1_PHONE || '9567113383';
+  const coord2Name = import.meta.env.VITE_COORDINATOR_2_NAME || 'ANCY ALEXANDER';
+  const coord2Phone = import.meta.env.VITE_COORDINATOR_2_PHONE || '8089012363';
+
   const handleLookupSubmit = async (e) => {
     e.preventDefault();
     if (!uniqueIdInput.trim()) {
@@ -53,9 +58,9 @@ export default function StepWelcome({ onStart, onLookupUniqueId, lookupError, se
       </div>
 
       <div style={{ marginTop: 20, fontSize: 9, color: 'var(--ink-600)', textAlign: 'center', fontWeight: 'bold' }}>
-        Contact Coordinators: ABRAHAM JOSEPH (<a href="tel:9567113383" style={{ color: 'var(--jy-crimson)' }}>9567113383</a>)
+        Contact Coordinators: {coord1Name} (<a href={`tel:${coord1Phone}`} style={{ color: 'var(--jy-crimson)' }}>{coord1Phone}</a>)
         <br />
-        ANCY ALEXANDER (<a href="tel:8089012363" style={{ color: 'var(--jy-crimson)' }}>8089012363</a>)
+        {coord2Name} (<a href={`tel:${coord2Phone}`} style={{ color: 'var(--jy-crimson)' }}>{coord2Phone}</a>)
       </div>
     </div>
   );

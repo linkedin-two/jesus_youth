@@ -10,8 +10,8 @@ logger = logging.getLogger("ocr_service")
 _rapid_ocr_engine = None
 
 # Standard expected baseline configuration
-EXPECTED_RECIPIENT_NAME = "ABRAHAM JOSEPH THADATHIL"
-EXPECTED_UPI_ID = "abrahamjosephthadathil200@okhdfcbank"
+EXPECTED_RECIPIENT_NAME = os.getenv("EXPECTED_RECIPIENT_NAME", "ABRAHAM JOSEPH THADATHIL")
+EXPECTED_UPI_ID = os.getenv("EXPECTED_UPI_ID", "abrahamjosephthadathil200@okhdfcbank")
 
 # Auto-discover Tesseract binary path if available
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))

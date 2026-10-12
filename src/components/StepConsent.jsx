@@ -12,6 +12,11 @@ export default function StepConsent({
 }) {
   const set = (name) => (e) => onChange(name, e.target.value);
 
+  const coord1Name = import.meta.env.VITE_COORDINATOR_1_NAME || 'ABRAHAM JOSEPH';
+  const coord1Phone = import.meta.env.VITE_COORDINATOR_1_PHONE || '9567113383';
+  const coord2Name = import.meta.env.VITE_COORDINATOR_2_NAME || 'ANCY ALEXANDER';
+  const coord2Phone = import.meta.env.VITE_COORDINATOR_2_PHONE || '8089012363';
+
   const totalPeopleCount = groupMembers.length + 1;
   const totalAmount = totalPeopleCount * 100;
 
@@ -148,10 +153,10 @@ export default function StepConsent({
       <div className="contacts-card">
         <h4>Need Help or Details? Contact Coordinators:</h4>
         <div className="contact-item">
-          <span>📞 <strong>ABRAHAM JOSEPH</strong>: <a href="tel:9567113383">9567113383</a></span>
+          <span>📞 <strong>{coord1Name}</strong>: <a href={`tel:${coord1Phone}`}>{coord1Phone}</a></span>
         </div>
         <div className="contact-item">
-          <span>📞 <strong>ANCY ALEXANDER</strong>: <a href="tel:8089012363">8089012363</a></span>
+          <span>📞 <strong>{coord2Name}</strong>: <a href={`tel:${coord2Phone}`}>{coord2Phone}</a></span>
         </div>
       </div>
 

@@ -8,7 +8,9 @@ export default function AdminLogin({ onLoginSuccess }) {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (username.trim() === 'vitaminc' && password.trim() === 'vitaminc') {
+    const adminUser = import.meta.env.VITE_ADMIN_USER || 'admin';
+    const adminPass = import.meta.env.VITE_ADMIN_PASS || 'admin';
+    if (username.trim() === adminUser && password.trim() === adminPass) {
       setError('');
       onLoginSuccess();
     } else {

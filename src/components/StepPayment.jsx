@@ -19,8 +19,9 @@ export default function StepPayment({
   const [showUploadMode, setShowUploadMode] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
 
-  const upiId = 'abrahamjosephthadathil200@okhdfcbank';
-  const accountName = 'Abraham Joseph Thadathil';
+  const upiId = import.meta.env.VITE_UPI_ID || 'abrahamjosephthadathil200@okhdfcbank';
+  const accountName = import.meta.env.VITE_UPI_ACCOUNT_NAME || 'Abraham Joseph Thadathil';
+  const qrImageSrc = import.meta.env.VITE_UPI_QR_URL || '/upi_qrcode.jpg';
 
   const totalPeople = groupMembers.length + 1;
   const totalAmount = totalPeople * 100;
@@ -199,8 +200,8 @@ export default function StepPayment({
             </div>
 
             <img
-              src="/upi_qrcode.jpg"
-              alt={`UPI QR Code - Abraham Joseph Thadathil ₹${totalAmount}`}
+              src={qrImageSrc}
+              alt={`UPI QR Code - ${accountName} ₹${totalAmount}`}
               className="qr-image"
               style={{
                 maxWidth: '100%',

@@ -17,6 +17,7 @@ import { getDeviceId } from './utils/device';
 import { saveDraft, loadDraft, clearDraft } from './utils/storage';
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'https://jesus-youth-ru8k.onrender.com').replace(/\/$/, '');
+const ADMIN_KEY = import.meta.env.VITE_ADMIN_KEY || 'vitaminc_secret_2026';
 
 const TOTAL_FORM_STEPS = 4;
 
@@ -352,7 +353,9 @@ export default function App() {
   // Fetch all registrations from MongoDB for Admin Dashboard
   const fetchAdminRegistrations = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/admin/registrations`);
+      const res = await fetch(`${API_BASE_URL}/api/admin/registrations`, {
+        headers: { 'x-admin-key': ADMIN_KEY }
+      });
       if (res.ok) {
         const data = await res.json();
         if (Array.isArray(data)) {
@@ -370,7 +373,10 @@ export default function App() {
     try {
       await fetch(`${API_BASE_URL}/api/admin/record-action/${recordId}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': ADMIN_KEY
+        },
         body: JSON.stringify({ action: action }),
       });
     } catch (e) {
@@ -430,7 +436,7 @@ export default function App() {
               <button
                 type="button"
                 className="btn-icon-tag"
-                onClick={() => setIsAdminLoggedIn(true) || setStep(isAdminLoggedIn ? -2 : -1)}
+                onClick={() => setStep(isAdminLoggedIn ? -2 : -1)}
               >
                 Admin 🔐
               </button>

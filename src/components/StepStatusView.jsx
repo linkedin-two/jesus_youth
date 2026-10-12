@@ -8,6 +8,11 @@ export default function StepStatusView({ registration, onRefreshStatus, onGoToWe
   const status = (registration.registrationStatus || 'PENDING').toUpperCase();
   const regId = registration.regId || registration.registration_id || 'Joseph-Kurian-9876543210-joseph@example.com-0001';
 
+  const coord1Name = import.meta.env.VITE_COORDINATOR_1_NAME || 'ABRAHAM JOSEPH';
+  const coord1Phone = import.meta.env.VITE_COORDINATOR_1_PHONE || '9567113383';
+  const coord2Name = import.meta.env.VITE_COORDINATOR_2_NAME || 'ANCY ALEXANDER';
+  const coord2Phone = import.meta.env.VITE_COORDINATOR_2_PHONE || '8089012363';
+
   const copyRegId = () => {
     navigator.clipboard.writeText(regId);
     setCopied(true);
@@ -101,9 +106,9 @@ export default function StepStatusView({ registration, onRefreshStatus, onGoToWe
           <div className="notice-box-red">
             If you believe this is an error, please contact coordinators:
             <br />
-            <strong>ABRAHAM JOSEPH (9567113383)</strong>
+            <strong>{coord1Name} ({coord1Phone})</strong>
             <br />
-            <strong>ANCY ALEXANDER (8089012363)</strong>
+            <strong>{coord2Name} ({coord2Phone})</strong>
           </div>
         </div>
       )}
