@@ -4,7 +4,8 @@ export default function AdminDashboard({
   submissions = [],
   onRecordAction,
   onLogout,
-  onBackToForm
+  onBackToForm,
+  onRefresh
 }) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('NEW_STUDENTS');
@@ -89,6 +90,11 @@ export default function AdminDashboard({
       <div className="admin-header">
         <h2>Admin Management Portal</h2>
         <div style={{ display: 'flex', gap: 6 }}>
+          {onRefresh && (
+            <button type="button" className="btn-secondary" onClick={onRefresh} style={{ fontSize: 8.5, padding: '4px 8px' }}>
+              Refresh 🔄
+            </button>
+          )}
           <button type="button" className="btn-secondary" onClick={onBackToForm} style={{ fontSize: 8.5, padding: '4px 8px' }}>
             Form
           </button>

@@ -58,6 +58,7 @@ export default function App() {
   const [userRegistration, setUserRegistration] = useState(null);
   const [mvpSubmissions, setMvpSubmissions] = useState([]);
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
+  const [adminToken, setAdminToken] = useState(ADMIN_KEY);
 
   // Restore draft from localStorage on initial render
   useEffect(() => {
@@ -351,10 +352,11 @@ export default function App() {
 
 
   // Fetch all registrations from MongoDB for Admin Dashboard
-  const fetchAdminRegistrations = async () => {
+  const fetchAdminRegistrations = async (keyOverride) => {
+    const key = keyOverride || adminToken || ADMIN_KEY;
     try {
       const res = await fetch(`${API_BASE_URL}/api/admin/registrations`, {
-        headers: { 'x-admin-key': ADMIN_KEY }
+        headers: { 'x-admin-key': key }
       });
       if (res.ok) {
         const data = await res.json();
@@ -370,12 +372,13 @@ export default function App() {
 
   // Admin Actions: Approve, Reject, or Delete a specific registration record
   const handleAdminRecordAction = async (recordId, action) => {
+    const key = adminToken || ADMIN_KEY;
     try {
       await fetch(`${API_BASE_URL}/api/admin/record-action/${recordId}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-admin-key': ADMIN_KEY
+          'x-admin-key': key
         },
         body: JSON.stringify({ action: action }),
       });
@@ -482,9 +485,11 @@ export default function App() {
           {/* Step -1: Admin Login */}
           {step === -1 && (
             <AdminLogin
-              onLoginSuccess={() => {
+              apiBaseUrl={API_BASE_URL}
+              onLoginSuccess={(receivedKey) => {
+                if (receivedKey) setAdminToken(receivedKey);
                 setIsAdminLoggedIn(true);
-                fetchAdminRegistrations();
+                fetchAdminRegistrations(receivedKey);
                 setStep(-2);
               }}
             />
@@ -496,6 +501,7 @@ export default function App() {
             <AdminDashboard
               submissions={mvpSubmissions}
               onRecordAction={handleAdminRecordAction}
+              onRefresh={() => fetchAdminRegistrations()}
               onLogout={() => {
                 setIsAdminLoggedIn(false);
                 setStep(0);
