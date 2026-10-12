@@ -74,7 +74,7 @@ export default function AdminLogin({ onLoginSuccess, apiBaseUrl }) {
             type="text"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            placeholder="admin / vitaminc"
+            placeholder="Enter username"
             autoCapitalize="none"
           />
         </Field>
@@ -84,7 +84,7 @@ export default function AdminLogin({ onLoginSuccess, apiBaseUrl }) {
             type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            placeholder="••••••••"
+            placeholder="Enter password"
           />
         </Field>
 
