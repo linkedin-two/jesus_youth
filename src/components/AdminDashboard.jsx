@@ -96,7 +96,7 @@ export default function AdminDashboard({
             </button>
           )}
           <button type="button" className="btn-secondary" onClick={onBackToForm} style={{ fontSize: 8.5, padding: '4px 8px' }}>
-            Form
+            Home 🏠
           </button>
           <button type="button" className="btn-secondary" onClick={onLogout} style={{ fontSize: 8.5, padding: '4px 8px', color: 'var(--red-700)' }}>
             Logout 🔒
